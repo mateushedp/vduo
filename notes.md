@@ -1,0 +1,3 @@
+- roxo normal: 0xFF292967
+- roxo forte: 0xFF29293b
+- roxo fraco: 0xFF9e9cc1
