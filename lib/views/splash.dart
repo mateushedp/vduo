@@ -13,21 +13,34 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreen extends State<SplashScreen> {
-  double _width = 300;
-  double _sizedBoxHeight = 0;
-  Alignment _alignment = Alignment.center;
+  double _logoContainerWidth = 300;
+  double _logoTopMarginHeight = 100;
+
+  //inicializa dois widgets como containers vazios. assim que a splash screen carregar,
+  //no setState altera os dois para suas widgets correspondentes:
+  //o divider, que é um hr
+  //e o loginWidget, que é o formulario de login
+  Widget divider = Container();
+  Widget loginWidget = Container();
 
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 3), () {
       setState(() {
-        _sizedBoxHeight = 40;
-        _width = 200;
-        _alignment = Alignment.topCenter;
-        // Timer(const Duration(seconds: 2), () {
-        //   // Navigator.pushNamed(context, LoginForm.nomeRota);
-        // });
+        _logoContainerWidth = 200;
+        _logoTopMarginHeight = 50;
+      });
+      Timer(const Duration(seconds: 1), () {
+        setState(() {
+          loginWidget = const LoginForm();
+          divider = const Divider(
+            height: 40,
+            indent: 55,
+            endIndent: 55,
+            color: Color(0xFF9e9cc1),
+          );
+        });
       });
     });
   }
@@ -36,28 +49,22 @@ class _SplashScreen extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Container(
         decoration: BoxDecoration(color: Color(0xFF292967)),
-        child: Center(
-            child: Column(
+        child: Column(
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              width: _width,
-              alignment: _alignment,
+              duration: Duration(milliseconds: 500),
+              width: _logoContainerWidth,
               child: Column(children: [
-                SizedBox(
-                  height: _sizedBoxHeight,
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 500),
+                  height: _logoTopMarginHeight,
                 ),
-                Image.asset('images/valorant-icon.png')
+                Image.asset('images/valorant-icon.png'),
               ]),
             ),
-            const Divider(
-              height: 40,
-              indent: 55,
-              endIndent: 55,
-              color: Color(0xFF9e9cc1),
-            ),
-            const LoginForm()
+            divider,
+            loginWidget,
           ],
-        )));
+        ));
   }
 }
