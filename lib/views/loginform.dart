@@ -109,7 +109,7 @@ class _LoginForm extends State<LoginForm> {
                 },
                 child: Text(
                   'Não tenho cadastro',
-                  style: TextStyle(color: Colors.blue),
+                  style: TextStyle(color: Color(0xFF9e9cc1)),
                 )),
           ),
         ],
