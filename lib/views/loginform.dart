@@ -105,7 +105,11 @@ class _LoginForm extends State<LoginForm> {
             margin: const EdgeInsets.only(top: 20),
             child: InkWell(
                 onTap: () {
-                  print('tappp');
+                  Navigator.pushReplacementNamed(context, "/signup",
+                      arguments: {
+                        "email": email,
+                      });
+                  // print('tappp');
                 },
                 child: Text(
                   'Não tenho cadastro',
@@ -155,7 +159,7 @@ class _LoginForm extends State<LoginForm> {
     if (_formKey.currentState!.validate()) {
       // Sem erros na validação
       _formKey.currentState!.save();
-      print("Email $email");
+      // print("Email $email");
 
       Navigator.pushReplacementNamed(context, "/signup", arguments: {
         "email": email,

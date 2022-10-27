@@ -14,7 +14,9 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue,
             fontFamily: 'Poppins',
             textTheme: const TextTheme(
-                bodyText1: TextStyle(color: Colors.white, fontSize: 16)),
+                bodyText1: TextStyle(color: Colors.white, fontSize: 16),
+                bodyText2: TextStyle(color: Colors.white, fontSize: 14),
+                headline1: TextStyle(color: Colors.white, fontSize: 40)),
             inputDecorationTheme: const InputDecorationTheme(
               labelStyle: TextStyle(color: Colors.white),
               filled: true,
