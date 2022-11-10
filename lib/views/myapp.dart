@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import 'splash.dart';
 import 'signup.dart';
 import 'loginform.dart';
+import 'home.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
           SplashScreen.nomeRota: (context) => const SplashScreen(),
           Signup.nomeRota: (context) => const Signup(),
           LoginForm.nomeRota: (context) => const LoginForm(),
+          Home.nomeRota: (context) => const Home(),
         });
   }
 }
