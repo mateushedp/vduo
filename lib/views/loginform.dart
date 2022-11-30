@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:vduo/dbHelper/mongodb.dart';
 
 class LoginForm extends StatefulWidget {
   static const nomeRota = "/form";
@@ -17,7 +18,7 @@ class _LoginForm extends State<LoginForm> {
 
   String? email, password;
   bool validate = false;
-
+  bool hasError = false;
   final controllerEmail = TextEditingController();
   final controllerPassword = TextEditingController();
 
@@ -31,9 +32,6 @@ class _LoginForm extends State<LoginForm> {
   @override
   void initState() {
     super.initState();
-    // Timer(const Duration(seconds: 1), () {
-    //   _height = 300;
-    // });
     controllerEmail.addListener(() {
       email = controllerEmail.text;
     });
@@ -45,12 +43,12 @@ class _LoginForm extends State<LoginForm> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: const Color(0xFF292967),
       child: SingleChildScrollView(
         child: Container(
-            decoration: BoxDecoration(color: Color(0xFF292967)),
+            decoration: const BoxDecoration(color: Color(0xFF292967)),
             height: _height,
-            padding: EdgeInsets.all(15.0),
+            padding: const EdgeInsets.all(15.0),
             child: Form(
               key: _formKey,
               child: _formUI(),
@@ -65,31 +63,38 @@ class _LoginForm extends State<LoginForm> {
       child: Column(
         children: <Widget>[
           Container(
-            margin: EdgeInsets.only(bottom: 15),
+            margin: const EdgeInsets.only(bottom: 15),
             child: TextFormField(
               controller: controllerEmail,
               style: Theme.of(context).textTheme.bodyText1,
-              decoration: InputDecoration(labelText: 'E-mail'),
-              validator: _validarEmail,
+              decoration: const InputDecoration(labelText: 'E-mail'),
             ),
           ),
           TextFormField(
             controller: controllerPassword,
             style: Theme.of(context).textTheme.bodyText1,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Senha',
             ),
-            // validator: null,
-            validator: _validarSenha,
             obscureText: true,
           ),
-          SizedBox(height: 30),
+          hasError
+              ? Column(
+                  children: const [
+                    Text(
+                      'Email ou senha inválidos.',
+                      style: TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                    SizedBox(height: 14)
+                  ],
+                )
+              : const SizedBox(height: 30),
           SizedBox(
             height: 46,
             width: 150,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF29293b),
+                backgroundColor: const Color(0xFF29293b),
                 shape: RoundedRectangleBorder(
                     //to set border radius to button
                     borderRadius: BorderRadius.circular(10)),
@@ -109,9 +114,8 @@ class _LoginForm extends State<LoginForm> {
                       arguments: {
                         "email": email,
                       });
-                  // print('tappp');
                 },
-                child: Text(
+                child: const Text(
                   'Não tenho cadastro',
                   style: TextStyle(color: Color(0xFF9e9cc1)),
                 )),
@@ -121,49 +125,29 @@ class _LoginForm extends State<LoginForm> {
     );
   }
 
-  String? _validarNome(String? value) {
-    String patttern = r'(^[a-zA-Z ]*$)';
-    RegExp regExp = RegExp(patttern);
-    if (value!.isEmpty) {
-      return "Informe o nome";
-    } else if (!regExp.hasMatch(value)) {
-      return "O nome deve conter caracteres de a-z ou A-Z";
-    }
-    return null;
+  Future<Map?> _findUser(String? email, String? password) async {
+    // final User user = await MongoDatabase.findByEmail(email, password);
+    var user = await MongoDatabase.findByEmail(email, password);
+    return user;
   }
 
-  String? _validarSenha(String? value) {
-    String pattern = r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$';
-    RegExp regExp = RegExp(pattern);
-    if (value!.isEmpty) {
-      return "Insira sua senha";
-    } else if (!regExp.hasMatch(value)) {
-      return "A senha deve conter 8 caracteres, 1 letra e 1 numero";
-    }
-  }
-
-  String? _validarEmail(String? value) {
-    String pattern =
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regExp = RegExp(pattern);
-    if (value!.isEmpty) {
-      return "Informe o Email";
-    } else if (!regExp.hasMatch(value)) {
-      return "Email inválido";
-    } else {
-      return null;
-    }
-  }
-
-  _sendForm() {
+  _sendForm() async {
     if (_formKey.currentState!.validate()) {
       // Sem erros na validação
       _formKey.currentState!.save();
-      // print("Email $email");
 
-      Navigator.pushReplacementNamed(context, "/signup", arguments: {
-        "email": email,
-      });
+      var result = await _findUser(email, password);
+      if (result != null) {
+        hasError = false;
+        Navigator.pushReplacementNamed(context, "/profile", arguments: {
+          "user": result,
+        });
+      } else {
+        print('\nUsuário nao encontrado.\n');
+        setState(() {
+          hasError = true;
+        });
+      }
     } else {
       // // erro de validação
       setState(() {

@@ -3,6 +3,7 @@ import 'splash.dart';
 import 'signup.dart';
 import 'loginform.dart';
 import 'home.dart';
+import 'profile.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -10,9 +11,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Meu app',
+        title: 'VDuo',
         theme: ThemeData(
-            primarySwatch: Colors.blue,
             fontFamily: 'Poppins',
             textTheme: const TextTheme(
                 bodyText1: TextStyle(color: Colors.white, fontSize: 16),
@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
           Signup.nomeRota: (context) => const Signup(),
           LoginForm.nomeRota: (context) => const LoginForm(),
           Home.nomeRota: (context) => const Home(),
+          Profile.nomeRota: (context) => const Profile(),
         });
   }
 }

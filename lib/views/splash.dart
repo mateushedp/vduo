@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'signup.dart';
 import 'loginform.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -48,23 +47,25 @@ class _SplashScreen extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(color: Color(0xFF292967)),
-        child: Column(
-          children: [
-            AnimatedContainer(
-              duration: Duration(milliseconds: 500),
-              width: _logoContainerWidth,
-              child: Column(children: [
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
-                  height: _logoTopMarginHeight,
-                ),
-                Image.asset('images/valorant-icon.png'),
-              ]),
-            ),
-            divider,
-            loginWidget,
-          ],
+        decoration: const BoxDecoration(color: Color(0xFF292967)),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                width: _logoContainerWidth,
+                child: Column(children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 500),
+                    height: _logoTopMarginHeight,
+                  ),
+                  Image.asset('images/valorant-icon.png'),
+                ]),
+              ),
+              divider,
+              loginWidget,
+            ],
+          ),
         ));
   }
 }
