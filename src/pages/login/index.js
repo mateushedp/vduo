@@ -33,14 +33,14 @@ export default function Login() {
 			<Dialog open={openDialogSignup} onOpenChange={setOpenDialogSignup}>
 				<DialogContent className="py-16 px-10">
 					<DialogHeader className="">
-						<DialogTitle>Join VDuo</DialogTitle>
+						<DialogTitle className="text-black">Join VDuo</DialogTitle>
 						<DialogDescription>
 							Find players to form groups and play together
 						</DialogDescription>
 					</DialogHeader>
 					<div className="flex flex-col gap-2.5 mt-5">
 						<SocialsButton social={"Facebook"}/>
-						<SocialsButton social={"Google"}/>
+						<SocialsButton social={"Google"} provider={providers?.google.id}/>
 						<SocialsButton social={"Discord"}/>
 					</div>
 				</DialogContent>
@@ -49,7 +49,7 @@ export default function Login() {
 			<Dialog open={openDialogLogin} onOpenChange={setOpenDialogLogin}>
 				<DialogContent className="py-16 px-10">
 					<DialogHeader className="">
-						<DialogTitle>Welcome back!</DialogTitle>
+						<DialogTitle className="text-black">Welcome back!</DialogTitle>
 						<DialogDescription>
 							Please log in
 						</DialogDescription>
