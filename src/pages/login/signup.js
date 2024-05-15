@@ -220,7 +220,7 @@ export default function Signup({userData, regions, languages, ranks, agents, rol
 			setIsLoading(false)
 			if(response.status === 200){
 				setError("")
-				signIn("google", { callbackUrl: "/dashboard"})
+				signIn("google", { callbackUrl: "/players"})
 			} else {
 				setError("Erro ao criar usuário!")
 				
