@@ -1,15 +1,18 @@
 import WeekdayButton from "./weekday-btn"
+import { cn } from "@/lib/utils"
 
-function WeekdayPicker({toggleDaySelection, selectedDays}) {
+function WeekdayPicker({toggleDaySelection, selectedDays, className}) {
+
+	const isClickable = toggleDaySelection ? true : false
 	return (
-		<div className='w-[285px] h-10 grid grid-cols-7 rounded-md text-white border border-grey-light bg-grey-dark text-base'>
-			<WeekdayButton isActive={selectedDays.includes("Seg")} onClick={()=> toggleDaySelection("Seg")} day="Seg" className="rounded-l-md"/>
-			<WeekdayButton isActive={selectedDays.includes("Ter")} onClick={()=> toggleDaySelection("Ter")} day="Ter"/>
-			<WeekdayButton isActive={selectedDays.includes("Qua")} onClick={()=> toggleDaySelection("Qua")} day="Qua"/>
-			<WeekdayButton isActive={selectedDays.includes("Qui")} onClick={()=> toggleDaySelection("Qui")} day="Qui"/>
-			<WeekdayButton isActive={selectedDays.includes("Sex")} onClick={()=> toggleDaySelection("Sex")} day="Sex"/>
-			<WeekdayButton isActive={selectedDays.includes("Sab")} onClick={()=> toggleDaySelection("Sab")} day="Sab"/>
-			<WeekdayButton isActive={selectedDays.includes("Dom")} onClick={()=> toggleDaySelection("Dom")} day="Dom" className="rounded-r-md border-r-0"/>
+		<div className={cn("w-[285px] h-10 grid grid-cols-7 rounded-md text-white border-2 border-grey-light bg-grey-dark text-base", className)}>
+			<WeekdayButton isClickable={isClickable} isActive={selectedDays.includes("Seg")} onClick={()=> toggleDaySelection ? toggleDaySelection("Seg") : null} day="Seg" className="rounded-l"/>
+			<WeekdayButton isClickable={isClickable} isActive={selectedDays.includes("Ter")} onClick={()=> toggleDaySelection ? toggleDaySelection("Ter") : null} day="Ter"/>
+			<WeekdayButton isClickable={isClickable} isActive={selectedDays.includes("Qua")} onClick={()=> toggleDaySelection ? toggleDaySelection("Qua") : null} day="Qua"/>
+			<WeekdayButton isClickable={isClickable} isActive={selectedDays.includes("Qui")} onClick={()=> toggleDaySelection ? toggleDaySelection("Qui") : null} day="Qui"/>
+			<WeekdayButton isClickable={isClickable} isActive={selectedDays.includes("Sex")} onClick={()=> toggleDaySelection ? toggleDaySelection("Sex") : null} day="Sex"/>
+			<WeekdayButton isClickable={isClickable} isActive={selectedDays.includes("Sab")} onClick={()=> toggleDaySelection ? toggleDaySelection("Sab") : null} day="Sab"/>
+			<WeekdayButton isClickable={isClickable} isActive={selectedDays.includes("Dom")} onClick={()=> toggleDaySelection ? toggleDaySelection("Dom") : null} day="Dom" className="rounded-r border-r-0"/>
 		</div>
 	)
 }
