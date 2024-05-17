@@ -60,6 +60,10 @@ const userSchema = new mongoose.Schema({
 	gameHoursEnd: {
 		type: String,
 		// required: true
+	},
+	rating: {
+		type: Number,
+		default: 5.0
 	}
 })
 
