@@ -1,7 +1,7 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 // import FacebookProvider from "next-auth/providers/facebook"
-import { getUserExists, getUserByGoogleId } from "@/lib/mongodb/models/User"
+import { getUserExists, getUserByEmail } from "@/lib/mongodb/models/User"
 import { setCookie } from "nookies"
 
 
@@ -47,10 +47,9 @@ export const authOptions = (req, res) => {
 				return "/login/signup"
 			},
 			async jwt({ token, account }) {
-
 				if (account) {
 					token.accessToken = account.access_token
-					token.user = await getUserByGoogleId(token.sub)
+					token.user = await getUserByEmail(token.email)
 				} else {
 					token.user = {
 						email: token.email,

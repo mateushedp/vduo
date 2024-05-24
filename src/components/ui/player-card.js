@@ -59,7 +59,7 @@ export default function PlayerCard({player, showNickname, children}) {
 							</div>
 							<div className="flex gap-1 items-center">
 								<LucideStar size={16} fill="white"/>
-								<p>{player.rating}</p>
+								<p>{parseFloat(player.averageRating).toFixed(2)}</p>
 							</div>
 						</div>
 					</div>

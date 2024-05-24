@@ -1,18 +1,17 @@
-import mongoose from "mongoose"
+import connectDB from "@/lib/mongodb/db"
 import User from "@/lib/mongodb/models/User"
 
 const handler = async(req, res) => {
+	await connectDB()
+
 	try {
-		await mongoose.connect(process.env.MONGODB_URI)
-		console.log("DB connected")
+		const users = await User.find({})
+
+		return res.status(200).json({users})
 	} catch (error) {
-		console.log("There was an error connection to the DB", error)
+		console.log("error: " + error)
+		return res.status(500).json({error})
 	}
-
-	const users = await User.find({})
-
-	return res.status(200).json({users})
-
 }
 
 export default handler
