@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import connectDB from "@/lib/mongodb/db"
 import User from "@/lib/mongodb/models/User"
 import PlayerCard from "@/components/ui/player-card"
 import { useState, useEffect } from "react"
@@ -141,8 +141,7 @@ export default function Players({players}) {
 export async function getServerSideProps() {
 	let players = null
 	try {
-		await mongoose.connect(process.env.MONGODB_URI)
-		console.log("DB connected")
+		await connectDB()
 		players = await User.find({})
 		players = JSON.parse(JSON.stringify(players))
 		

@@ -1,4 +1,4 @@
- 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	Dialog,
@@ -9,11 +9,11 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
-
-import { LucideStar, LucideStarOff } from "lucide-react"
 import RatingStars from "./rating"
  
-export function CustomDialog({open, setOpen, title, description, rating}) {
+export function CustomDialog({open, setOpen, title, description, isRating, raterUserId, ratedUserId, handleClick}) {
+	const [score, setScore] = useState(0)
+
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogContent className="sm:max-w-md bg-grey-mid" closeIconColor="white">
@@ -24,15 +24,8 @@ export function CustomDialog({open, setOpen, title, description, rating}) {
 					</DialogDescription>
 				</DialogHeader>
 				<div className="flex justify-center items-center space-x-2">
-					{/* <div className="flex items-center gap-2">
-						<LucideStar size={40}/>
-						<LucideStar size={40}/>
-						<LucideStar size={40}/>
-						<LucideStar size={40}/>
-						<LucideStar size={40}/>						
-					</div> */}
-					{rating &&
-						<RatingStars />
+					{isRating &&
+						<RatingStars score={score} setScore={setScore}/>
 					}
 
 				</div>
@@ -42,7 +35,10 @@ export function CustomDialog({open, setOpen, title, description, rating}) {
 							Cancelar
 						</Button>
 					</DialogClose>
-					<Button type="button">
+					<Button type="button" onClick={() => {
+						handleClick(raterUserId, ratedUserId, score)
+						setOpen(false)
+					}}>
 						Confirmar
 					</Button>
 				</DialogFooter>

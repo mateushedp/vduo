@@ -1,19 +1,17 @@
 import mongoose from "mongoose"
 
-const URI = process.env.MONGODB_URI
+const connectDB = async () => {
+	if(mongoose.connections[0].readyState){
+		return true
+	}
 
-if (!URI) throw new Error("URI do Mongo não foi encontrada")
+	try {
+		await mongoose.connect(process.env.MONGODB_URI)
+		console.log("MongoDB connected")
+		return true
+	} catch (error) {
+		console.log(error)
+	}
+}
 
-mongoose.connect(URI, {
-	useNewUrlParser: true,
-	useUnifiedTopology: true,
-})
-
-const db = mongoose.connection
-
-db.on("error", console.error.bind(console, "connection error:"))
-db.once("open", () => {
-	console.log("Conectado ao Mongo.")
-})
-
-export default mongoose
+export default connectDB

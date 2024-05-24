@@ -1,19 +1,12 @@
-import { NextResponse, NextRequest } from "next/server"
 import multer from "multer"
-import mongoose from "mongoose"
 import fs from "fs/promises" // Import fs module to read file contents
-
 import User from "@/lib/mongodb/models/User"
+import connectDB from "@/lib/mongodb/db"
 
 const upload = multer({ dest: "uploads/" }) 
 
 const handler = async(req, res) => {
-	try {
-		await mongoose.connect(process.env.MONGODB_URI)
-		console.log("DB connected")
-	} catch (error) {
-		console.log("There was an error connection to the DB", error)
-	}
+	await connectDB()
 
 	const formData = JSON.parse(req.body.user)
 	
