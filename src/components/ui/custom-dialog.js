@@ -36,7 +36,12 @@ export function CustomDialog({open, setOpen, title, description, isRating, rater
 						</Button>
 					</DialogClose>
 					<Button type="button" onClick={() => {
-						handleClick(raterUserId, ratedUserId, score)
+						if(isRating){
+							handleClick(raterUserId, ratedUserId, score)
+						} else {
+							handleClick(raterUserId, ratedUserId)
+
+						}
 						setOpen(false)
 					}}>
 						Confirmar
