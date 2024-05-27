@@ -6,32 +6,84 @@ import { useState, useEffect } from "react"
 import { LucideX, LucideStar, LucideCheck } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CustomDialog } from "@/components/ui/custom-dialog"
+import Spinner from "@/components/ui/spinner"
 import axios from "axios"
 
 
 export default function Friends({userId}) {
 
 	const [players, setPlayers] = useState([])
+	const [invites, setInvites] = useState([])
 	const [openTab, setOpenTab] = useState("friends")
-	const [openRemoveFriendModal, setOpenRemoveFriendModal] = useState(false)
+	const [isLoading, setIsLoading] = useState(false)
+
 	const [openRateFriendModal, setOpenRateFriendModal] = useState(false)
+	const [openRemoveFriendModal, setOpenRemoveFriendModal] = useState(false)
+	const [openAcceptInviteModal, setOpenAcceptInviteModal] = useState(false)
+	const [openDeclineInviteModal, setOpenDeclineInviteModal] = useState(false)
 
 	const getFriends = async () => {
+		setIsLoading(true)
 		try {
-			const response = await axios.get("/api/users/users")
-			console.log(response)
+			const response = await axios.post("/api/users/getFriends", {userId})
 			if(response.status === 200) {
-				setPlayers(response.data.users)
+				setPlayers(response.data.friends)
 			}
+		} catch (error) {
+			console.log(error)
+		}
+		setIsLoading(false)
+	}
+
+	const getInvites = async () => {
+		setIsLoading(true)
+		try {
+			const response = await axios.post("/api/users/getInvites", {userId})
+			if(response.status === 200) {
+				setInvites(response.data.invites)
+			}
+		} catch (error) {
+			console.log(error)
+		}
+		setIsLoading(false)
+	}
+
+	const acceptInvite = async(receiverId, senderId) => {
+		try {
+			const response = await axios.post("/api/users/acceptInvite", {
+				receiverId,
+				senderId,
+			})
+
+			getInvites()
 		} catch (error) {
 			console.log(error)
 		}
 	}
 
+	const declineInvite = async(receiverId, senderId) => {
+		try {
+			const response = await axios.post("/api/users/declineInvite", {
+				receiverId,
+				senderId,
+			})
+
+			getInvites()
+
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	// useEffect(() => {
+	// 	getFriends()
+	// }, [getFriends])
+	
 	useEffect(() => {
-		getFriends()
-		
-	}, [getFriends])
+		if(openTab === "invites") getInvites()
+		else getFriends()
+
+	}, [openTab])
 
 	const addRating = async (raterUserId, ratedUserId, score) => {
 
@@ -43,7 +95,20 @@ export default function Friends({userId}) {
 			})
 
 			getFriends()
-			// console.log(response.data.message)
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	const removeFriend = async (currentUser, selectedUser) => {
+		try {
+			const response = await axios.post("/api/users/removeFriend", {
+				currentUser,
+				selectedUser
+			})
+
+			getFriends()
+
 		} catch (error) {
 			console.log(error)
 		}
@@ -52,13 +117,6 @@ export default function Friends({userId}) {
 
 	return (
 		<div className="mt-8">
-
-			<CustomDialog
-				open={openRemoveFriendModal}
-				setOpen={setOpenRemoveFriendModal}
-				title="Remover Amizade"
-				description="Deseja remover esse perfil da sua lista de amigos?"	
-			/>
 			
 			<div className="flex justify-center">
 				<Tabs value={openTab} onValueChange={setOpenTab} className="w-[300px]">
@@ -74,6 +132,10 @@ export default function Friends({userId}) {
 				<div>
 					<h2>Amigos</h2>
 					<div className="flex flex-col gap-2">
+						{isLoading &&
+							<Spinner className="fill-white mt-20" />
+						
+						}
 						{players.length>0 && 
 						players.map(player => {
 							return(
@@ -103,6 +165,15 @@ export default function Friends({userId}) {
 										</div>
 									</PlayerCard>
 									<CustomDialog
+										open={openRemoveFriendModal}
+										setOpen={setOpenRemoveFriendModal}
+										title="Remover amizade"
+										description="Deseja remover esse perfil da sua lista de amigos?"
+										raterUserId={userId || null}
+										ratedUserId={player._id}
+										handleClick={removeFriend}
+									/>
+									<CustomDialog
 										open={openRateFriendModal}
 										setOpen={setOpenRateFriendModal}
 										title="Avaliar Amigo"
@@ -121,31 +192,60 @@ export default function Friends({userId}) {
 			}
 			{openTab === "invites" &&
 			<div>
-				<h2>invites</h2>
+				<h2>Convites</h2>
 				<div className="flex flex-col gap-2">
-					{players.length>0 && 
-						players.map(player => {
+					{isLoading &&
+							<Spinner className="fill-white mt-20" />
+						
+					}
+					{invites.length>0 && 
+						invites.map(player => {
 							return(
-								<PlayerCard
-									key={player._id}
-									player={player}
-								>
-									<div className="my-6 flex items-start ">
-										<div className="w-[75px] h-full pt-8 px-2 border-r border-grey-very-light">
-											<button className="flex flex-col items-center gap-2">
-												<LucideCheck size={30}/>
-												<p>Aceitar Convite</p>
-											</button>
-										</div>
-										<div className="w-[75px] h-full pt-8 px-2 ">
-											<button className="flex flex-col items-center gap-2">
-												<LucideX size={30}/>
-												<p>Recusar Convite</p>
-											</button>
-										</div>
+								<>
+									<PlayerCard
+										key={player._id}
+										player={player}
+									>
+										<div className="my-6 flex items-start ">
+											<div className="w-[75px] h-full pt-8 px-2 border-r border-grey-very-light">
+												<button className="flex flex-col items-center gap-2"
+													onClick={() => setOpenAcceptInviteModal(true)}
+												>
+													<LucideCheck size={30}/>
+													<p>Aceitar Convite</p>
+												</button>
+											</div>
+											<div className="w-[75px] h-full pt-8 px-2 ">
+												<button className="flex flex-col items-center gap-2"
+													onClick={() => setOpenDeclineInviteModal(true)}
+												>
+													<LucideX size={30}/>
+													<p>Recusar Convite</p>
+												</button>
+											</div>
 										
-									</div>
-								</PlayerCard>
+										</div>
+									</PlayerCard>
+									<CustomDialog
+										open={openAcceptInviteModal}
+										setOpen={setOpenAcceptInviteModal}
+										title="Aceitar convite"
+										description="Deseja aceitar esse convite de amizade?"
+										raterUserId={userId || null}
+										ratedUserId={player._id}
+										handleClick={acceptInvite}
+									/>
+									
+									<CustomDialog
+										open={openDeclineInviteModal}
+										setOpen={setOpenDeclineInviteModal}
+										title="Recusar convite"
+										description="Deseja recusar esse convite de amizade?"
+										raterUserId={userId || null}
+										ratedUserId={player._id}
+										handleClick={declineInvite}	
+									/>
+								</>
 							)
 						})
 					}

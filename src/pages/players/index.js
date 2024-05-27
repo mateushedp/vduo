@@ -1,17 +1,22 @@
 import connectDB from "@/lib/mongodb/db"
 import User from "@/lib/mongodb/models/User"
+import { getSession } from "next-auth/react"
 import PlayerCard from "@/components/ui/player-card"
 import { useState, useEffect } from "react"
 import { LucideUserPlus2 } from "lucide-react"
 import { CustomDialog } from "@/components/ui/custom-dialog"
 import { FilterCombobox } from "@/components/ui/filter-combobox"
 import { Label } from "@/components/ui/label"
+import Spinner from "@/components/ui/spinner"
 import WeekdayPicker from "@/components/ui/weekday-picker"
 import TimePicker from "@/components/ui/time-picker"
+import axios from "axios"
 
-export default function Players({players}) {
+export default function Players({userId}) {
 	const [openInviteModal, setOpenInviteModal] = useState(false)
+	const [players, setPlayers] = useState([])
 	const [availablePlayers, setAvailablePlayers] = useState(players)
+	const [isLoading, setIsLoading] = useState(false)
 	const [selectedDays, setSelectedDays] = useState([])
 	const [hourStart, setHourStart] = useState("01:00")
 	const [hourEnd, setHourEnd] = useState("23:00")
@@ -30,6 +35,30 @@ export default function Players({players}) {
 	const ranks = ["Iron", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Ascendant", "Immortal", "Radiant"]
 	const ratings = ["5.00", "4.00", "3.00", "2.00", "1.00"]
 
+	const getPlayers = async () => {
+		setIsLoading(true)
+		try {
+			const response = await axios.post("/api/users/getPlayers", {userId})
+			if(response.status === 200) {
+				setPlayers(response.data.players)
+			}
+		} catch (error) {
+			console.log(error)
+		}
+		setIsLoading(false)
+	}
+
+	const sendInvite = async (currentUser, selectedUser) => {
+		try {
+			const response = await axios.post("/api/users/sendInvite", {
+				currentUser,
+				selectedUser
+			})
+
+		} catch (error) {
+			console.log(error)
+		}
+	}
 
 	const toggleDaySelection = (day) => {
 		if(selectedDays.includes(day)) {
@@ -46,6 +75,14 @@ export default function Players({players}) {
 		}))
 		
 	}, [selectedDays])
+
+	useEffect(() => {
+		getPlayers()
+	}, [])
+
+	useEffect(() => {
+		setAvailablePlayers(players)
+	}, [players])
 
 	useEffect(() => {
 		setFilters(prevFilters => ({
@@ -66,7 +103,7 @@ export default function Players({players}) {
 			if(filters.role !== "" && player.role !== filters.role) return false
 			if(filters.region !== "" && player.region !== filters.region) return false
 			if(filters.rank !== "" && !player.rank.startsWith(filters.rank)) return false
-			if(filters.rating !== "" && player.rating < filters.rating) return false
+			if(filters.rating !== "" && player.averageRating < filters.rating) return false
 			if(filters.days.length > 0 && !filters.days.every(day => player.gameDays.includes(day))) return false
 			const filterTimeStart = new Date(`2000-01-01T${filters.hourStart}`)
 			const filterTimeEnd = new Date(`2000-01-01T${filters.hourEnd}`)
@@ -105,6 +142,10 @@ export default function Players({players}) {
 				
 			</div>
 			<div className="flex flex-col gap-2">
+				{isLoading &&
+					<Spinner className="fill-white mt-20" />	
+				}
+
 				{availablePlayers.length>0 && 
 			availablePlayers.map(player => {
 				return(
@@ -126,7 +167,9 @@ export default function Players({players}) {
 							setOpen={setOpenInviteModal}
 							title="Enviar convite"
 							description={`Enviar convite para ${player.name.split(" ")[0]}?`}
-							player={player}	
+							raterUserId={userId}
+							ratedUserId={player._id}
+							handleClick={sendInvite}
 						/>
 					</>
 				)
@@ -138,18 +181,20 @@ export default function Players({players}) {
 	)
 }
 
-export async function getServerSideProps() {
-	let players = null
+export async function getServerSideProps(context) {
+	const session = await getSession(context)
+	let userId
+
 	try {
 		await connectDB()
-		players = await User.find({})
-		players = JSON.parse(JSON.stringify(players))
+		let user = await User.findOne({ email: session.user.email }).select("_id")
+		if (user) userId = user._id.toString()
 		
 
 	} catch (error) {
 		console.log("There was an error connection to the DB", error)
 	}
 
-	return { props: { players}}
+	return { props: { userId}}
 
 }
