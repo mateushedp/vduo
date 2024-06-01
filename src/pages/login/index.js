@@ -21,7 +21,6 @@ export default function Login() {
 		//essa função busca todos os providers de autenticação do nextauth atualmente sendo usados
 		(async () => {
 			const result = await getProviders()
-
 			setProviders(result)
 		})()
 
@@ -39,9 +38,9 @@ export default function Login() {
 						</DialogDescription>
 					</DialogHeader>
 					<div className="flex flex-col gap-2.5 mt-5">
-						<SocialsButton social={"Facebook"}/>
+						<SocialsButton social={"Facebook"}  provider={providers?.facebook.id}/>
 						<SocialsButton social={"Google"} provider={providers?.google.id}/>
-						<SocialsButton social={"Discord"}/>
+						<SocialsButton social={"Discord"} provider={providers?.discord.id}/>
 					</div>
 				</DialogContent>
 			</Dialog>
@@ -55,9 +54,9 @@ export default function Login() {
 						</DialogDescription>
 					</DialogHeader>
 					<div className="flex flex-col gap-2.5 mt-5">
-						<SocialsButton social={"Facebook"} />
+						<SocialsButton social={"Facebook"}  provider={providers?.facebook.id}/>
 						<SocialsButton social={"Google"} provider={providers?.google.id}/>
-						<SocialsButton social={"Discord"}/>
+						<SocialsButton social={"Discord"} provider={providers?.discord.id}/>
 					</div>
 				</DialogContent>
 			</Dialog>
