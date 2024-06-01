@@ -375,4 +375,30 @@ export async function removeFriend(userId, friendId) {
 	}
 }
 
+export async function deleteUserProfile(userId) {
+	try {
+		await connectDB()
+
+		// Find the user to be deleted
+		const user = await User.findById(userId)
+		console.log("found user: ", user)
+		if (!user) {
+			throw new Error("User not found")
+		}
+
+		// Remove the user ID from all their friends' `friends` arrays
+		await User.updateMany(
+			{ _id: { $in: user.friends } },
+			{ $pull: { friends: userId } }
+		)
+
+		// Delete the user profile
+		await User.findByIdAndDelete(userId)
+
+		console.log("User profile deleted successfully")
+	} catch (error) {
+		console.error("Error deleting user profile:", error)
+	}
+}
+
 export default User

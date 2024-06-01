@@ -78,7 +78,6 @@ export default function PlayerCard({player, showNickname, children}) {
 						</div >
 						<div className="flex justify-between mt-2">
 							{player.agents.map(agent => {
-								{console.log()}
 								return <img src={`/img/agents/${agent}.png`} alt="" key={agent} className="h-8 bg-main-red rounded"/>
 							})}
 						</div>

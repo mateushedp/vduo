@@ -1,3 +1,5 @@
+import { getUserByEmail } from "@/lib/mongodb/models/User"
+import connectDB from "@/lib/mongodb/db"
 import { getSession } from "next-auth/react"
 import { useState, useEffect } from "react"
 import MainCard from "@/components/ui/main-card"
@@ -20,24 +22,24 @@ import { Input } from "@/components/ui/input"
 import { Combobox } from "@/components/ui/combobox"
 import { Progress } from "@/components/ui/progress"
 import Spinner from "@/components/ui/spinner"
-import { parse } from "date-fns"
+import { parse, format, parseISO, addDays } from "date-fns"
 import axios from "axios"
 import { capitalizeFirstLetter } from "@/lib/utils"
 import AgentCard from "./../../components/ui/agent-card"
 import WeekdayPicker from "./../../components/ui/weekday-picker"
 import nookies from "nookies"
+import { useRouter } from "next/router"
 
-export default function Signup({userData, regions, languages, ranks, agents, roles}) {
-
+export default function Signup({userData, regions, languages, ranks, agents, roles, defaultUserData, isEdit, session}) {
+	const router = useRouter()
 	const [page, setPage] = useState(1)
-	const [selectedAgents, setSelectedAgents] = useState([])
-	const [selectedDays, setSelectedDays] = useState([])
+	const [selectedAgents, setSelectedAgents] = useState(defaultUserData?.agents ?? [])
+	const [selectedDays, setSelectedDays] = useState(defaultUserData?.gameDays ?? [])
 	const [selectedFile, setSelectedFile] = useState(null)
 
-
-	const [formattedDate, setFormattedDate] = useState("")
-	const [formattedHourStart, setFormattedHourStart] = useState("")
-	const [formattedHourEnd, setFormattedHourEnd] = useState("")
+	const [formattedDate, setFormattedDate] = useState(defaultUserData?.birthday ? format(addDays(parseISO(defaultUserData.birthday), 1), "dd/MM/yyyy") : "")
+	const [formattedHourStart, setFormattedHourStart] = useState(defaultUserData?.gameHoursStart ?? "")
+	const [formattedHourEnd, setFormattedHourEnd] = useState(defaultUserData?.gameHoursEnd ?? "")
 
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState("")
@@ -171,18 +173,18 @@ export default function Signup({userData, regions, languages, ranks, agents, rol
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			picture: "",
-			name: "",
+			name: defaultUserData?.name ? defaultUserData.name : "",
 			email: userData?.email ?? "",
-			birthday: "",
-			region: "",
-			language: "",
-			nickname: "",
-			agents: "",
-			role: "",
-			rank: "",
-			gameDays: "",
-			gameHoursStart: "",
-			gameHoursEnd: "",
+			birthday: defaultUserData?.birthday ? defaultUserData.birthday : "",
+			region: defaultUserData?.region ? defaultUserData.region : "",
+			language: defaultUserData?.language ? defaultUserData.language : "",
+			nickname: defaultUserData?.nickname ? defaultUserData.nickname : "",
+			agents: defaultUserData?.agents ? defaultUserData.agents : "",
+			role: defaultUserData?.role ? defaultUserData.role : "",
+			rank: defaultUserData?.rank ? defaultUserData.rank : "",
+			gameDays: defaultUserData?.gameDays ? defaultUserData.gameDays : "",
+			gameHoursStart: defaultUserData?.gameHoursStart ? defaultUserData.gameHoursStart : "",
+			gameHoursEnd: defaultUserData?.gameHoursEnd ? defaultUserData.gameHoursEnd : "",
 		},
 	})
 
@@ -203,33 +205,64 @@ export default function Signup({userData, regions, languages, ranks, agents, rol
 
 		const [day, month, year] = values.birthday.split("/")
 		const dateObject = new Date(`${year}-${month}-${day}`)
-		const user = {...values, birthday: dateObject}
+		
+		let user
+		if(isEdit && session) {
+			user = {_id: defaultUserData?._id, ...values, birthday: dateObject}
+		}else{
+			user = {...values, birthday: dateObject}
+		}
 		
 		const formData = new FormData()
 		formData.append("user", JSON.stringify(user))
 		formData.append("picture", selectedFile)
 
 		setIsLoading(true)
-		try {
-			const response = await axios.post("/api/users/user", formData, {
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-			})
+		if(isEdit && session){
 
-			setIsLoading(false)
-			if(response.status === 200){
-				setError("")
-				signIn("google", { callbackUrl: "/players"})
-			} else {
-				setError("Erro ao criar usuário!")
-				
+			try {
+				const response = await axios.post("/api/users/updateUser", formData, {
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
+				})
+	
+				setIsLoading(false)
+				if(response.status === 200){
+					setError("")
+					router.push("/profile")
+				} else {
+					setError("Erro ao editar usuário!")
+					
+				}
+	
+			} catch (error) {
+				console.log(
+					"There was a problem with the fetch operation " + error.message
+				)
 			}
-
-		} catch (error) {
-			console.log(
-				"There was a problem with the fetch operation " + error.message
-			)
+		} else {
+			try {
+				const response = await axios.post("/api/users/user", formData, {
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
+				})
+	
+				setIsLoading(false)
+				if(response.status === 200){
+					setError("")
+					signIn("google", { callbackUrl: "/players"})
+				} else {
+					setError("Erro ao criar usuário!")
+					
+				}
+	
+			} catch (error) {
+				console.log(
+					"There was a problem with the fetch operation " + error.message
+				)
+			}
 		}
 	}
 
@@ -245,7 +278,10 @@ export default function Signup({userData, regions, languages, ranks, agents, rol
 						{page === 1 && 
 
 						<div className="space-y-3">
-							<h1 className="text-center text-3xl font-semibold mb-2">Detalhes do perfil</h1>
+							<h1 className="text-center text-3xl font-semibold mb-2">
+								{isEdit && "Editar "}
+								Detalhes do Perfil
+							</h1>
 							<h2 className="text-center text-base text-muted-foreground italic mb-7">*Campos obrigatórios</h2>
 							
 							<FormField
@@ -338,7 +374,12 @@ export default function Signup({userData, regions, languages, ranks, agents, rol
 
 						{page === 2 && 
 						<div className="space-y-3">
-							<h1 className="text-center text-3xl font-semibold mb-2">Detalhes do jogo</h1>
+							
+
+							<h1 className="text-center text-3xl font-semibold mb-2">
+								{isEdit && "Editar "}
+								Detalhes do Jogo
+							</h1>
 							<h2 className="text-center text-base text-muted-foreground italic mb-7">*Campos obrigatórios</h2>
 
 							<FormField
@@ -462,8 +503,18 @@ export default function Signup({userData, regions, languages, ranks, agents, rol
 						}
 						{page === 3 &&
 						<div className="space-y-3 mb-16">
-							<h1 className="text-center text-3xl font-semibold mb-14">Tudo pronto!</h1>
-							<p className="text-center">Você já está cadastrado e pode começar a procurar seu próximo duo! Seja bem vindo.</p>
+							{isEdit &&
+							<>
+								<h1 className="text-center text-3xl font-semibold mb-14">Finalizar Edição</h1>
+								<p className="text-center">Clique em concluir para finalizar a edição dos seus dados.</p>
+							</>
+							}
+							{!isEdit && 
+							<>
+								<h1 className="text-center text-3xl font-semibold mb-14">Tudo pronto!</h1>
+								<p className="text-center">Clique em concluir para finalizar seu cadastro e começar a procurar seu próximo duo! Seja bem vindo.</p>
+							</>
+							}
 							{error.length > 1 &&
 								<p className="text-center text-xl text-red-600">{error}</p>
 							}
@@ -475,6 +526,7 @@ export default function Signup({userData, regions, languages, ranks, agents, rol
 							{page > 1 ?
 								(<Button variant="secondary" onClick={() => page > 1 ? setPage(page - 1) : setPage(page)} disabled={isLoading}>Voltar</Button>) :
 								(<div className="invisible"></div>)
+								
 							}
 
 							{page < 3 &&
@@ -490,6 +542,11 @@ export default function Signup({userData, regions, languages, ranks, agents, rol
 								</Button>
 							}
 						</div>
+						{isEdit &&
+							<div className="flex justify-center">
+								<Button className="mt-5" variant="destructive" onClick={() => router.push("/profile")} disabled={isLoading}>Cancelar Edição</Button>
+							</div>							
+						}
 					</form>
 				</Form>
 			</MainCard>
@@ -502,6 +559,20 @@ export async function getServerSideProps(context) {
 
 	const session = await getSession(context)
 	const cookies = nookies.get(context)
+	const isEdit = context.query.isEdit || null
+	let defaultUserData = null
+
+	if(isEdit && session){
+		try {
+			await connectDB()
+			let user = await getUserByEmail(session.user.email)
+			if(user) {
+				defaultUserData = JSON.parse(JSON.stringify(user))
+			}
+		} catch (error) {
+			console.log(error)
+		}
+	}
 
 	let userData = null
 
@@ -611,5 +682,5 @@ export async function getServerSideProps(context) {
 		icon: "Asterisk"
 	})
 
-	return { props: { userData, regions, languages, ranks, agents, roles }}
+	return { props: { userData, regions, languages, ranks, agents, roles, defaultUserData, isEdit, session: !!session }}
 }
