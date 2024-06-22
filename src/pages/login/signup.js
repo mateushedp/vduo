@@ -252,7 +252,7 @@ export default function Signup({userData, regions, languages, ranks, agents, rol
 				setIsLoading(false)
 				if(response.status === 200){
 					setError("")
-					signIn("google", { callbackUrl: "/players"})
+					signIn(userData?.provider || "google", { callbackUrl: "/players"})
 				} else {
 					setError("Erro ao criar usuário!")
 					
@@ -583,6 +583,7 @@ export async function getServerSideProps(context) {
 		}
 	} else {
 		userData = JSON.parse(cookies.user)
+		userData.provider = cookies.provider
 	}
 
 	function sortAlphabetically(array){
